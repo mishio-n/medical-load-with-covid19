@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:13.9-alpine
+    container_name: medical_db
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: academy
+      POSTGRES_PASSWORD: academy
+      POSTGRES_DB: medical

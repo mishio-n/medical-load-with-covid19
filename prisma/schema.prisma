@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Facility {
+  id          String               @id
+  name        String
+  prefecture  String
+  address     String
+  tel         String
+  latitude    Decimal
+  longtitude  Decimal
+  city  String
+  cityCode String
+
+  submittions FacilitySubmittion[]
+}
+
+model FacilitySubmittion {
+  id   Int    @id @default(autoincrement())
+  date String
+  answer AnswerType
+  facilityType FacilityType
+
+  Facility   Facility @relation(fields: [facilityId], references: [id])
+  facilityId String
+}
+
+enum FacilityType {
+  HOSPITAL
+  OUTPATIENT
+  EMERGENCY
+}
+
+enum AnswerType {
+  NORMAL
+  LIMITTED
+  STOPPED
+  NULL
+}
