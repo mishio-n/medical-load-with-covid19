@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app-ca-16-medical-facility
+  
+  Sample SAM Template for sam-app-ca-16-medical-facility
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 1024
+    Environment:
+      Variables:
+        DB_HOST: ca-academy-db.c9ml7do7yvmn.ap-northeast-1.rds.amazonaws.com
+        DB_USER: academy16
+        DB_PASSWORD: kpsHGq9nmWXNicgvMtPWjqg7AaGQry
+        DB_PORT: 3306
+        DATABASE: academy16
+
+Resources:
+  DailyDataBatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: daily-data-batch/
+      Handler: daily-data-batch
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            # 日本の12時
+            Schedule: cron(0 3 * * ? *)
+      Role: arn:aws:iam::880843126767:role/go-academy-lambda
+
+Outputs:
+  DailyDataBatchFunction:
+    Description: "First Lambda Function ARN"
+    Value: !GetAtt DailyDataBatchFunction.Arn
