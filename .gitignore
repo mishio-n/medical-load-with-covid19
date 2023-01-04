@@ -20,4 +20,6 @@ go.work
 ## node
 node_modules
 
+.env
+env.json
 .aws-sam
