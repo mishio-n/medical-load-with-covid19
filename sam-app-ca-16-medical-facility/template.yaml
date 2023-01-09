@@ -33,8 +33,52 @@ Resources:
             # 日本の12時
             Schedule: cron(0 3 * * ? *)
       Role: arn:aws:iam::880843126767:role/go-academy-lambda
+  
+  DailyStatisticsBatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: statistics-batch/
+      Handler: statistics-batch
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            # 日本の12時15分
+            Schedule: cron(15 3 * * ? *)
+      Role: arn:aws:iam::880843126767:role/go-academy-lambda
+  
+  FindByPrefectureFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/find-by-prefecture/
+      Handler: find-by-prefecture
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /facilities
+            Method: GET
+      Role: arn:aws:iam::880843126767:role/go-academy-lambda
 
 Outputs:
   DailyDataBatchFunction:
-    Description: "First Lambda Function ARN"
+    Description: "DailyBatch"
     Value: !GetAtt DailyDataBatchFunction.Arn
+
+  DailyStatisticsBatchFunction:
+    Description: "DailyStatisticsBatch"
+    Value: !GetAtt DailyStatisticsBatchFunction.Arn
+
+  FindByPrefectureFunction:
+    Description: "FindByPrefecture"
+    Value: !GetAtt FindByPrefectureFunction.Arn
+
+  FacilityAPI:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/facilities/"

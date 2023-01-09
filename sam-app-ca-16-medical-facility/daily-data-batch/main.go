@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	DATA_URL = "https://opendata.corona.go.jp/api/Covid19DailySurvey?localGovCode=261009"
+	DATA_URL = "https://opendata.corona.go.jp/api/Covid19DailySurvey/?prefName=%E6%9D%B1%E4%BA%AC%E9%83%BD"
 )
 
 type DailySurveyResponse struct {

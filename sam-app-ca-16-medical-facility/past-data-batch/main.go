@@ -9,25 +9,9 @@ import (
 	"strconv"
 	"time"
 
+	"covid19/models"
 	"covid19/shared"
 )
-
-type DailySurveyResponse struct {
-	FacilityId   string `json:"facilityId"`
-	FacilityName string `json:"facilityName"`
-	ZipCode      string `json:"zipCode"`
-	PrefName     string `json:"prefName"`
-	FacilityAddr string `json:"facilityAddr"`
-	FacilityTel  string `json:"facilityTel"`
-	Latitude     string `json:"latitude"`
-	Longtitude   string `json:"longitude"`
-	SubmitDate   string `json:"submitDate"`
-	FacilityType string `json:"facilityType"`
-	AnsType      string `json:"ansType"`
-	LocalGovCode string `json:"localGovCode"`
-	CityName     string `json:"cityName"`
-	FacilityCode string `json:"facilityCode"`
-}
 
 func main() {
 	date := time.Date(2021, 1, 27, 0, 0, 0, 0, time.Local)
@@ -63,7 +47,7 @@ func fetchAndInsertDailyData(dataUrl string) {
 
 	body, _ := io.ReadAll(res.Body)
 
-	var dailySurveyResponse []DailySurveyResponse
+	var dailySurveyResponse []models.DailySurveyResponse
 	json.Unmarshal(body, &dailySurveyResponse)
 
 	db, err := shared.Connect()
@@ -115,7 +99,7 @@ func fetchAndInsertDailyData(dataUrl string) {
 }
 
 func getDataUrl(date string) string {
-	return "https://opendata.corona.go.jp/api/Covid19DailySurvey/" + date + "?localGovCode=261009"
+	return "https://opendata.corona.go.jp/api/Covid19DailySurvey/" + date + "?prefName=%E6%9D%B1%E4%BA%AC%E9%83%BD"
 }
 
 func convFacilityType(raw string) string {
