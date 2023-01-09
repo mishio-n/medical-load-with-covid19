@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"covid19/models"
 	"covid19/shared"
 )
 
@@ -18,10 +17,21 @@ type Request struct {
 	CityCode   string `json:"cityCode"`
 }
 
-type Response struct {
-	models.Facility
-	models.MedicalStatistics
-	Id string `json:"facilityId"`
+type FacilityWithStatistics struct {
+	Id           string  `json:"id"`
+	Name         string  `json:"name"`
+	Prefecture   string  `json:"prefecture"`
+	Address      string  `json:"address"`
+	Latitude     float64 `json:"latitude"`
+	Longtitude   float64 `json:"longitude"`
+	City         string  `json:"city"`
+	CityCode     string  `json:"cityCode"`
+	ValidDays    int     `json:"validDays"`
+	NormalDays   int     `json:"normalDays"`
+	LimittedDays int     `json:"limittedDays"`
+	StoppedDays  int     `json:"stoppedDays"`
+	Rate         float64 `json:"rate"`
+	FacilityType string  `json:"facilityType"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -35,9 +45,6 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	var response Response
-	log.Println(response)
-
 	db, err := shared.Connect()
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +52,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Minute)
 
-	facilities := getFacilities(db, prefecture, cityCode)
+	facilities := getFacilitiesWithStatistics(db, prefecture, cityCode)
 	body, _ := json.Marshal(facilities)
 
 	return events.APIGatewayProxyResponse{
@@ -58,24 +65,43 @@ func main() {
 	lambda.Start(handler)
 }
 
-func getFacilities(db *sql.DB, prefecture string, cityCode string) []models.Facility {
-	statement := "select * from Facility where prefecture = '" + prefecture + "'"
+func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string) []FacilityWithStatistics {
+	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longtitude, Facility.city, Facility.cityCode, 
+								MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType
+								from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id 
+								where prefecture = '` + prefecture + "'"
 	if cityCode != "" {
 		statement += " and cityCode = '" + cityCode + "'"
 	}
 
+	log.Println(statement)
 	rows, err := db.Query(statement)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var facilities []models.Facility
+	var facilities []FacilityWithStatistics
 
 	for rows.Next() {
-		facility := models.Facility{}
-		rows.Scan(&facility.Id, &facility.Name, &facility.Prefecture, &facility.Address, &facility.Tel, &facility.Latitude, &facility.Longtitude, &facility.City, &facility.CityCode)
+		facility := FacilityWithStatistics{}
+		rows.Scan(
+			&facility.Id,
+			&facility.Name,
+			&facility.Prefecture,
+			&facility.Address,
+			&facility.Latitude,
+			&facility.Longtitude,
+			&facility.City,
+			&facility.CityCode,
+			&facility.ValidDays,
+			&facility.NormalDays,
+			&facility.LimittedDays,
+			&facility.StoppedDays,
+			&facility.Rate,
+			&facility.FacilityType,
+		)
+
 		facilities = append(facilities, facility)
 	}
-
 	return facilities
 }

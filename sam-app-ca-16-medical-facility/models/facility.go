@@ -21,11 +21,11 @@ type Submission struct {
 }
 
 type MedicalStatistics struct {
-	ValidDays    int
-	NormalDays   int
-	LimittedDays int
-	StoppedDays  int
-	Rate         float64
-	FacilityType string
-	FacilityId   string
+	ValidDays    int     `json:"validDays"`
+	NormalDays   int     `json:"normalDays"`
+	LimittedDays int     `json:"limittedDays"`
+	StoppedDays  int     `json:"stoppedDays"`
+	Rate         float64 `json:"rate"`
+	FacilityType string  `json:"facilityType"`
+	FacilityId   string  `json:"facilityId"`
 }
