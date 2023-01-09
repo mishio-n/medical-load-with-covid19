@@ -100,8 +100,6 @@ func handler(request events.CloudWatchEvent) {
 	if err := tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
-
-	return
 }
 
 func main() {
@@ -130,7 +128,7 @@ func convAnsType(raw string) string {
 	case "停止":
 		return "STOPPED"
 	case "未回答":
-		return "STOPPED"
+		return "NOANSWER"
 	default:
 		return "NULL"
 	}

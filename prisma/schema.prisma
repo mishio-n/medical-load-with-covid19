@@ -18,7 +18,8 @@ model Facility {
   city       String
   cityCode   String
 
-  submissions FacilitySubmission[]
+  submissions       FacilitySubmission[]
+  medicalStatistics MedicalStatistics[]
 }
 
 model FacilitySubmission {
@@ -31,6 +32,20 @@ model FacilitySubmission {
   facilityId String
 
   @@unique([date, facilityId, facilityType])
+}
+
+model MedicalStatistics {
+  validDays    Int
+  normalDays   Int
+  limittedDays Int
+  stoppedDays  Int
+  facilityType FacilityType
+  rate         Float
+
+  Facility   Facility @relation(fields: [facilityId], references: [id])
+  facilityId String
+
+  @@id([facilityId, facilityType])
 }
 
 enum FacilityType {
