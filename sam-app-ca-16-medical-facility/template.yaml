@@ -65,6 +65,22 @@ Resources:
             Path: /facilities
             Method: GET
       Role: arn:aws:iam::880843126767:role/go-academy-lambda
+  
+  GetRateByPointFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/get-rate-by-point/
+      Handler: get-rate-by-point
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /rate
+            Method: GET
+      Role: arn:aws:iam::880843126767:role/go-academy-lambda
 
 Outputs:
   DailyDataBatchFunction:
@@ -79,6 +95,10 @@ Outputs:
     Description: "FindByPrefecture"
     Value: !GetAtt FindByPrefectureFunction.Arn
 
+  GetRateByPointFunction:
+    Description: "GetRateByPoint"
+    Value: !GetAtt GetRateByPointFunction.Arn
+
   FacilityAPI:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/facilities/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

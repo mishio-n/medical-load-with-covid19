@@ -9,25 +9,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
+	"covid19/models"
 	"covid19/shared"
 )
-
-type FacilityWithStatistics struct {
-	Id           string  `json:"id"`
-	Name         string  `json:"name"`
-	Prefecture   string  `json:"prefecture"`
-	Address      string  `json:"address"`
-	Latitude     float64 `json:"latitude"`
-	Longtitude   float64 `json:"longitude"`
-	City         string  `json:"city"`
-	CityCode     string  `json:"cityCode"`
-	ValidDays    int     `json:"validDays"`
-	NormalDays   int     `json:"normalDays"`
-	LimittedDays int     `json:"limittedDays"`
-	StoppedDays  int     `json:"stoppedDays"`
-	Rate         float64 `json:"rate"`
-	FacilityType string  `json:"facilityType"`
-}
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	prefecture := request.QueryStringParameters["prefecture"]
@@ -61,7 +45,7 @@ func main() {
 	lambda.Start(handler)
 }
 
-func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string, facilityType string) []FacilityWithStatistics {
+func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string, facilityType string) []models.FacilityWithStatistics {
 	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longtitude, Facility.city, Facility.cityCode, 
 								MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType
 								from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id 
@@ -79,10 +63,10 @@ func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string,
 		log.Fatal(err)
 	}
 
-	var facilities []FacilityWithStatistics
+	var facilities []models.FacilityWithStatistics
 
 	for rows.Next() {
-		facility := FacilityWithStatistics{}
+		facility := models.FacilityWithStatistics{}
 		rows.Scan(
 			&facility.Id,
 			&facility.Name,
