@@ -1,33 +1,15 @@
 package main
 
 import (
+	"covid19/models"
 	"covid19/shared"
 	"database/sql"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/shopspring/decimal"
 )
-
-type Facility struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Prefecture string `json:"prefecture"`
-	Address    string `json:"address"`
-	Tel        string `json:"tel"`
-	Latitude   string `json:"latitude"`
-	Longtitude string `json:"longitude"`
-	City       string `json:"city"`
-	CityCode   string `json:"cityCode"`
-}
-
-type Submission struct {
-	Id           string `json:"id"`
-	Date         string `json:"date"`
-	Answer       string `json:"answer"`
-	FacilityType string `json:"facilityType"`
-	FacilityId   string `json:"facilityId"`
-}
 
 func main() {
 	db, err := shared.Connect()
@@ -41,9 +23,9 @@ func main() {
 	for _, facility := range facilities {
 		submissions := getSubmissionsByFacilityId(db, facility.Id)
 
-		hospitalSubmissions := make([]Submission, 0)
-		outpatientSubmissions := make([]Submission, 0)
-		emergencySubmissions := make([]Submission, 0)
+		hospitalSubmissions := make([]models.Submission, 0)
+		outpatientSubmissions := make([]models.Submission, 0)
+		emergencySubmissions := make([]models.Submission, 0)
 
 		for _, submission := range submissions {
 			if submission.FacilityType == "HOSPITAL" {
@@ -68,16 +50,16 @@ func main() {
 	}
 }
 
-func getFacilities(db *sql.DB) []Facility {
+func getFacilities(db *sql.DB) []models.Facility {
 	rows, err := db.Query("select * from Facility")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var facilities []Facility
+	var facilities []models.Facility
 
 	for rows.Next() {
-		facility := Facility{}
+		facility := models.Facility{}
 		rows.Scan(&facility.Id, &facility.Name, &facility.Prefecture, &facility.Address, &facility.Tel, &facility.Latitude, &facility.Longtitude, &facility.City, &facility.CityCode)
 		facilities = append(facilities, facility)
 	}
@@ -85,16 +67,16 @@ func getFacilities(db *sql.DB) []Facility {
 	return facilities
 }
 
-func getSubmissionsByFacilityId(db *sql.DB, facilityId string) []Submission {
+func getSubmissionsByFacilityId(db *sql.DB, facilityId string) []models.Submission {
 	rows, err := db.Query("select * from FacilitySubmission where facilityId = '" + facilityId + "'")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var submissions []Submission
+	var submissions []models.Submission
 
 	for rows.Next() {
-		submission := Submission{}
+		submission := models.Submission{}
 		rows.Scan(&submission.Id, &submission.Date, &submission.Answer, &submission.FacilityType, &submission.FacilityId)
 		submissions = append(submissions, submission)
 	}
@@ -103,10 +85,15 @@ func getSubmissionsByFacilityId(db *sql.DB, facilityId string) []Submission {
 }
 
 func upsertStatistics(db *sql.DB, validDays int, normalDays int, limittedDays int, stoppedDays int, facilityType string, facilityId string, rate float64) {
-	insert, err := db.Prepare(`insert into MedicalStatistics 
-														(validDays, normalDays, limittedDays, stoppedDays, facilityType, facilityId, rate) 
-														values (?,?,?,?,?,?,?) 
-														on duplicate key update facilityId = '` + facilityId + "', facilityType = '" + facilityType + "'")
+	insert, err := db.Prepare(
+		`insert into MedicalStatistics (validDays, normalDays, limittedDays, stoppedDays, facilityType, facilityId, rate) values (?,?,?,?,?,?,?) 
+			on duplicate key update validDays = '` + strconv.Itoa(validDays) +
+			"', normalDays = '" + strconv.Itoa(normalDays) +
+			"', limittedDays = '" + strconv.Itoa(limittedDays) +
+			"', stoppedDays = '" + strconv.Itoa(stoppedDays) +
+			"', rate = '" + strconv.FormatFloat(rate, 'f', 2, 64) +
+			"'")
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,7 +105,7 @@ func upsertStatistics(db *sql.DB, validDays int, normalDays int, limittedDays in
 	}
 }
 
-func aggregateSubmissions(submissions []Submission) (validDays int, normalDays int, limittedDays int, stoppedDays int, rate float64) {
+func aggregateSubmissions(submissions []models.Submission) (validDays int, normalDays int, limittedDays int, stoppedDays int, rate float64) {
 	valid, normal, limitted, stopped := 0, 0, 0, 0
 	rate = 0.0
 

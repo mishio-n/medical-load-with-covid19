@@ -12,11 +12,6 @@ import (
 	"covid19/shared"
 )
 
-type Request struct {
-	Prefecture string `json:"prefecture"`
-	CityCode   string `json:"cityCode"`
-}
-
 type FacilityWithStatistics struct {
 	Id           string  `json:"id"`
 	Name         string  `json:"name"`
@@ -37,6 +32,7 @@ type FacilityWithStatistics struct {
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	prefecture := request.QueryStringParameters["prefecture"]
 	cityCode := request.QueryStringParameters["cityCode"]
+	facilityType := request.QueryStringParameters["type"]
 
 	if prefecture == "" {
 		return events.APIGatewayProxyResponse{
@@ -52,7 +48,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Minute)
 
-	facilities := getFacilitiesWithStatistics(db, prefecture, cityCode)
+	facilities := getFacilitiesWithStatistics(db, prefecture, cityCode, facilityType)
 	body, _ := json.Marshal(facilities)
 
 	return events.APIGatewayProxyResponse{
@@ -65,7 +61,7 @@ func main() {
 	lambda.Start(handler)
 }
 
-func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string) []FacilityWithStatistics {
+func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string, facilityType string) []FacilityWithStatistics {
 	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longtitude, Facility.city, Facility.cityCode, 
 								MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType
 								from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id 
@@ -74,7 +70,10 @@ func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string)
 		statement += " and cityCode = '" + cityCode + "'"
 	}
 
-	log.Println(statement)
+	if facilityType != "" {
+		statement += " and facilityType = '" + facilityType + "'"
+	}
+
 	rows, err := db.Query(statement)
 	if err != nil {
 		log.Fatal(err)
