@@ -125,7 +125,7 @@ func aggregateSubmissions(submissions []models.Submission) (validDays int, norma
 	}
 
 	if valid != 0 {
-		raw := decimal.NewFromFloat32((float32(normal) + 0.5*float32(limitted)) / float32(valid))
+		raw := decimal.NewFromFloat32((float32(normal) + 0.3*float32(limitted)) / float32(valid))
 		rate, _ = raw.Truncate(2).Float64()
 	}
 
