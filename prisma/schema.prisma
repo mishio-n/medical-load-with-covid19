@@ -13,8 +13,8 @@ model Facility {
   prefecture String
   address    String
   tel        String
-  latitude   Decimal
-  longtitude Decimal
+  latitude   Decimal @db.Decimal(8, 6)
+  longitude  Decimal @db.Decimal(9, 6)
   city       String
   cityCode   String
 

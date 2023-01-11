@@ -26,7 +26,7 @@ type DailySurveyResponse struct {
 	FacilityAddr string `json:"facilityAddr"`
 	FacilityTel  string `json:"facilityTel"`
 	Latitude     string `json:"latitude"`
-	Longtitude   string `json:"longitude"`
+	Longitude    string `json:"longitude"`
 	SubmitDate   string `json:"submitDate"`
 	FacilityType string `json:"facilityType"`
 	AnsType      string `json:"ansType"`
@@ -67,7 +67,7 @@ func handler(request events.CloudWatchEvent) {
 	}
 	defer tx.Rollback()
 
-	facilityInsert, err := tx.Prepare("insert ignore into Facility (id,name,prefecture,address,tel,latitude,longtitude,city,cityCode) VALUES (?,?,?,?,?,?,?,?,?)")
+	facilityInsert, err := tx.Prepare("insert ignore into Facility (id,name,prefecture,address,tel,latitude,longitude,city,cityCode) VALUES (?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,11 +84,11 @@ func handler(request events.CloudWatchEvent) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		longtitude, err := strconv.ParseFloat(row.Longtitude, 64)
+		longitude, err := strconv.ParseFloat(row.Longitude, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if _, err := facilityInsert.Exec(row.FacilityId, row.FacilityName, row.PrefName, row.FacilityAddr, row.FacilityTel, latitude, longtitude, row.CityName, row.LocalGovCode); err != nil {
+		if _, err := facilityInsert.Exec(row.FacilityId, row.FacilityName, row.PrefName, row.FacilityAddr, row.FacilityTel, latitude, longitude, row.CityName, row.LocalGovCode); err != nil {
 			log.Fatal(err)
 		}
 

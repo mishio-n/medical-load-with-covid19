@@ -63,7 +63,7 @@ func fetchAndInsertDailyData(dataUrl string) {
 	}
 	defer tx.Rollback()
 
-	facilityInsert, err := tx.Prepare("insert ignore into Facility (id,name,prefecture,address,tel,latitude,longtitude,city,cityCode) VALUES (?,?,?,?,?,?,?,?,?)")
+	facilityInsert, err := tx.Prepare("insert ignore into Facility (id,name,prefecture,address,tel,latitude,longitude,city,cityCode) VALUES (?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,11 +80,11 @@ func fetchAndInsertDailyData(dataUrl string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		longtitude, err := strconv.ParseFloat(row.Longtitude, 64)
+		longitude, err := strconv.ParseFloat(row.Longitude, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if _, err := facilityInsert.Exec(row.FacilityId, row.FacilityName, row.PrefName, row.FacilityAddr, row.FacilityTel, latitude, longtitude, row.CityName, row.LocalGovCode); err != nil {
+		if _, err := facilityInsert.Exec(row.FacilityId, row.FacilityName, row.PrefName, row.FacilityAddr, row.FacilityTel, latitude, longitude, row.CityName, row.LocalGovCode); err != nil {
 			log.Fatal(err)
 		}
 

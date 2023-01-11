@@ -7,7 +7,7 @@ type Facility struct {
 	Address    string  `json:"address"`
 	Tel        string  `json:"tel"`
 	Latitude   float64 `json:"latitude"`
-	Longtitude float64 `json:"longitude"`
+	Longitude  float64 `json:"longitude"`
 	City       string  `json:"city"`
 	CityCode   string  `json:"cityCode"`
 }
@@ -36,7 +36,7 @@ type FacilityWithStatistics struct {
 	Prefecture   string  `json:"prefecture"`
 	Address      string  `json:"address"`
 	Latitude     float64 `json:"latitude"`
-	Longtitude   float64 `json:"longitude"`
+	Longitude    float64 `json:"longitude"`
 	City         string  `json:"city"`
 	CityCode     string  `json:"cityCode"`
 	ValidDays    int     `json:"validDays"`

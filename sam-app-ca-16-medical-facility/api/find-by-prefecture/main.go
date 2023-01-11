@@ -46,7 +46,7 @@ func main() {
 }
 
 func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string, facilityType string) []models.FacilityWithStatistics {
-	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longtitude, Facility.city, Facility.cityCode, 
+	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longitude, Facility.city, Facility.cityCode, 
 								MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType
 								from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id 
 								where prefecture = '` + prefecture + "'"
@@ -73,7 +73,7 @@ func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string,
 			&facility.Prefecture,
 			&facility.Address,
 			&facility.Latitude,
-			&facility.Longtitude,
+			&facility.Longitude,
 			&facility.City,
 			&facility.CityCode,
 			&facility.ValidDays,

@@ -8,7 +8,7 @@ type DailySurveyResponse struct {
 	FacilityAddr string `json:"facilityAddr"`
 	FacilityTel  string `json:"facilityTel"`
 	Latitude     string `json:"latitude"`
-	Longtitude   string `json:"longitude"`
+	Longitude    string `json:"longitude"`
 	SubmitDate   string `json:"submitDate"`
 	FacilityType string `json:"facilityType"`
 	AnsType      string `json:"ansType"`

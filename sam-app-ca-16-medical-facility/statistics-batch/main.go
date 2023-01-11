@@ -60,7 +60,7 @@ func getFacilities(db *sql.DB) []models.Facility {
 
 	for rows.Next() {
 		facility := models.Facility{}
-		rows.Scan(&facility.Id, &facility.Name, &facility.Prefecture, &facility.Address, &facility.Tel, &facility.Latitude, &facility.Longtitude, &facility.City, &facility.CityCode)
+		rows.Scan(&facility.Id, &facility.Name, &facility.Prefecture, &facility.Address, &facility.Tel, &facility.Latitude, &facility.Longitude, &facility.City, &facility.CityCode)
 		facilities = append(facilities, facility)
 	}
 
