@@ -16,8 +16,13 @@ import (
 )
 
 type FacilityWithRate struct {
-	models.Facility
+	models.FacilityWithStatistics
 	Distance float64 `json:"distance"`
+}
+
+type Response struct {
+	AreaRate   float64            `json:"areaRate"`
+	Facilities []FacilityWithRate `json:"facilities"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -45,7 +50,18 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	db.SetConnMaxLifetime(time.Minute)
 
 	facilities := getFacilitiesArround(db, longitude, latitude, distance)
-	body, _ := json.Marshal(facilities)
+	if len(facilities) == 0 {
+		return events.APIGatewayProxyResponse{
+			Body:       "指定した範囲に存在するデータが見つかりませんでした",
+			StatusCode: 404,
+		}, nil
+	}
+
+	response := new(Response)
+	response.Facilities = facilities
+	response.AreaRate = calcAreaRate(facilities)
+
+	body, _ := json.Marshal(response)
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
@@ -58,17 +74,19 @@ func main() {
 }
 
 func getFacilitiesArround(db *sql.DB, longitude float64, latitude float64, distance float64) []FacilityWithRate {
-	rows, err := db.Query(`select *, 
+	rows, err := db.Query(`select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longitude, Facility.city, Facility.cityCode, 
+												MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType, 
 												(
 													6371 * acos(
-														cos(radians(` + strconv.FormatFloat(35.6916, 'f', 4, 64) + `))
+														cos(radians(` + strconv.FormatFloat(latitude, 'f', 4, 64) + `))
 														* cos(radians(latitude))
-														* cos(radians(longitude) - radians(` + strconv.FormatFloat(139.7703, 'f', 4, 64) + `))
-														+ sin(radians(` + strconv.FormatFloat(35.6916, 'f', 4, 64) + `))
+														* cos(radians(longitude) - radians(` + strconv.FormatFloat(longitude, 'f', 4, 64) + `))
+														+ sin(radians(` + strconv.FormatFloat(latitude, 'f', 4, 64) + `))
 														* sin(radians(latitude))
 													)
 												) AS distance 
-												from Facility 
+												from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id
+												where validDays >= 365
 												having distance <= ` + strconv.FormatFloat(distance, 'f', 2, 64) + `
 												order by distance`)
 	if err != nil {
@@ -83,11 +101,16 @@ func getFacilitiesArround(db *sql.DB, longitude float64, latitude float64, dista
 			&facility.Name,
 			&facility.Prefecture,
 			&facility.Address,
-			&facility.Tel,
 			&facility.Latitude,
 			&facility.Longitude,
 			&facility.City,
 			&facility.CityCode,
+			&facility.ValidDays,
+			&facility.NormalDays,
+			&facility.LimittedDays,
+			&facility.StoppedDays,
+			&facility.Rate,
+			&facility.FacilityType,
 			&facility.Distance,
 		)
 
@@ -100,46 +123,12 @@ func getFacilitiesArround(db *sql.DB, longitude float64, latitude float64, dista
 	return facilities
 }
 
-// func getFacilitiesWithStatistics(db *sql.DB, prefecture string, cityCode string, facilityType string) []models.FacilityWithStatistics {
-// 	statement := `select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longitude, Facility.city, Facility.cityCode,
-// 								MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType
-// 								from Facility inner join MedicalStatistics on MedicalStatistics.facilityId=Facility.id
-// 								where prefecture = '` + prefecture + "'"
-// 	if cityCode != "" {
-// 		statement += " and cityCode = '" + cityCode + "'"
-// 	}
+func calcAreaRate(facilities []FacilityWithRate) float64 {
+	sum := 0.0
 
-// 	if facilityType != "" {
-// 		statement += " and facilityType = '" + facilityType + "'"
-// 	}
+	for _, facility := range facilities {
+		sum += facility.Rate
+	}
 
-// 	rows, err := db.Query(statement)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	var facilities []models.FacilityWithStatistics
-
-// 	for rows.Next() {
-// 		facility := models.FacilityWithStatistics{}
-// 		rows.Scan(
-// 			&facility.Id,
-// 			&facility.Name,
-// 			&facility.Prefecture,
-// 			&facility.Address,
-// 			&facility.Latitude,
-// 			&facility.Longitude,
-// 			&facility.City,
-// 			&facility.CityCode,
-// 			&facility.ValidDays,
-// 			&facility.NormalDays,
-// 			&facility.LimittedDays,
-// 			&facility.StoppedDays,
-// 			&facility.Rate,
-// 			&facility.FacilityType,
-// 		)
-
-// 		facilities = append(facilities, facility)
-// 	}
-// 	return facilities
-// }
+	return math.Floor(sum/float64(len(facilities))*100) / 100
+}
