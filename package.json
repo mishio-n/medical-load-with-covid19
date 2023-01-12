@@ -2,5 +2,9 @@
   "dependencies": {
     "@prisma/client": "^4.7.1",
     "prisma": "^4.7.1"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^9.3.0",
+    "prisma-erd-generator": "^1.2.4"
   }
 }

@@ -2,6 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  output = "../ERD.png"
+  provider = "prisma-erd-generator"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
