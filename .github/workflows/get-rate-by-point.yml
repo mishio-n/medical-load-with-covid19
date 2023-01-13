@@ -2,16 +2,16 @@ name: get-rate-by-pointのテスト
 on: [push]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     services:
-    db:
-      image: mysql:8.0.28
-      ports:
-        - 3307:3306
-      env:
-        MYSQL_ROOT_PASSWORD: password
-        MYSQL_DATABASE: test_db
+      db:
+        image: mysql:8.0.28
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: test_db
 
     steps:
       - uses: actions/checkout@v3
