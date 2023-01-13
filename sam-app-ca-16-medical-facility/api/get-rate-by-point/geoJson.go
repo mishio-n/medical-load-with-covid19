@@ -17,17 +17,20 @@ type GeoJsonFeature struct {
 }
 
 type GeoJsonFeatureProperty struct {
+	// スタイル設定
 	Stroke        string  `json:"stroke"`
 	StrokeOpacity float64 `json:"stroke-opacity"`
 	StrokeWidth   int     `json:"stroke-width"`
 	Fill          string  `json:"fill"`
 	FillOpacity   float64 `json:"fill-opacity"`
 	MarkerColor   string  `json:"marker-color"`
-	Title         string  `json:"title"`
-	Description   string  `json:"description"`
+	// メタデータ
+	Name string  `json:"病院"`
+	Type string  `json:"種別"`
+	Rate float64 `json:"rate"`
 }
 
 type GeoJsonFeatureGeometry struct {
-	Type        string          `json:"type"`
-	Coordinates [1][][2]float64 `json:"coordinates"`
+	Type        string      `json:"type"`
+	Coordinates interface{} `json:"coordinates"`
 }

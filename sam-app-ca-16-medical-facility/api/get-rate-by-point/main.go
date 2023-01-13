@@ -26,6 +26,11 @@ type Response struct {
 	GeoJson    GeoJson            `json:"geoJson"`
 }
 
+var (
+	GREEN_RATE  = 0.8
+	ORANGE_RATE = 0.6
+)
+
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	longitude, err1 := strconv.ParseFloat(request.QueryStringParameters["lon"], 64)
 	latitude, err2 := strconv.ParseFloat(request.QueryStringParameters["lat"], 64)
@@ -58,12 +63,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
+	areaRate := calcAreaRate(facilities)
 	circlePoints := generateCirclePoints(Coordinates{Longitude: longitude, Latitude: latitude}, distance)
 
 	response := new(Response)
 	response.Facilities = facilities
-	response.AreaRate = calcAreaRate(facilities)
-	response.GeoJson = createGeoJson(circlePoints, circlePoints, 0.4)
+	response.AreaRate = areaRate
+	response.GeoJson = createGeoJson(circlePoints, facilities, areaRate)
 
 	body, _ := json.Marshal(response)
 
@@ -77,6 +83,8 @@ func main() {
 	lambda.Start(handler)
 }
 
+// 中心座標と半径で指定した範囲に含まれるレコードを取得する
+// @see https://qiita.com/yangci/items/dffaacf424ebeb1dd643
 func getFacilitiesArround(db *sql.DB, longitude float64, latitude float64, distance float64) []FacilityWithRate {
 	rows, err := db.Query(`select Facility.id, Facility.name, Facility.prefecture, Facility.address, Facility.latitude, Facility.longitude, Facility.city, Facility.cityCode, 
 												MedicalStatistics.validDays, MedicalStatistics.normalDays, MedicalStatistics.limittedDays, MedicalStatistics.stoppedDays, MedicalStatistics.rate, MedicalStatistics.facilityType, 
@@ -175,7 +183,8 @@ func generateCirclePoints(center Coordinates, radius float64) []Coordinates {
 	return points
 }
 
-func createGeoJson(circlePoints []Coordinates, facilityPoints []Coordinates, areaRate float64) GeoJson {
+// 分析データを地図上に表現するためのGeoJsonデータを作成する
+func createGeoJson(circlePoints []Coordinates, facilities []FacilityWithRate, areaRate float64) GeoJson {
 	var geoJson = GeoJson{}
 	geoJson.Type = "FeatureCollection"
 
@@ -194,24 +203,55 @@ func createGeoJson(circlePoints []Coordinates, facilityPoints []Coordinates, are
 		Type:        "Polygon",
 		Coordinates: coordinatesToTupleSlice(circlePoints),
 	}
-
 	geoJson.Features = append(geoJson.Features, circleFeature)
+
+	// 病院マーカー生成
+	for _, facility := range facilities {
+		properties := GeoJsonFeatureProperty{
+			Name: facility.Name,
+			Type: facility.FacilityType,
+			Rate: facility.Rate,
+		}
+
+		if facility.Rate > GREEN_RATE {
+			properties.MarkerColor = "green"
+		} else if facility.Rate > ORANGE_RATE {
+			properties.MarkerColor = "orange"
+		} else {
+			properties.MarkerColor = "red"
+		}
+
+		geoJson.Features = append(geoJson.Features,
+			GeoJsonFeature{
+				Type:       "Feature",
+				Properties: properties,
+				Geometry: GeoJsonFeatureGeometry{
+					Type: "Point",
+					Coordinates: [2]float64{
+						facility.Longitude,
+						facility.Latitude,
+					},
+				},
+			})
+	}
 
 	return geoJson
 }
 
+// エリア評価値に応じた色を返す
 func areaColor(areaRate float64) string {
 	if areaRate > 0.8 {
 		return "green"
 	}
 
 	if areaRate > 0.6 {
-		return "yellow"
+		return "orange"
 	}
 
 	return "red"
 }
 
+// 緯度経度をGeoJsonのPolygon形式に対応したものに変換する
 func coordinatesToTupleSlice(points []Coordinates) [1][][2]float64 {
 	var result [1][][2]float64
 	var tupleSlice [][2]float64
