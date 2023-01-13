@@ -1,0 +1,26 @@
+name: get-rate-by-pointのテスト
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+    db:
+      image: mysql:8.0.28
+      ports:
+        - 3307:3306
+      env:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: test_db
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17.x'
+      - name: Test
+        run: |
+          cd sam-app-ca-16-medical-facility/api/get-rate-by-point
+          go get .
+          go test
