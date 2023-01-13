@@ -9,13 +9,6 @@ Globals:
   Function:
     Timeout: 60
     MemorySize: 1024
-    Environment:
-      Variables:
-        DB_HOST: ca-academy-db.c9ml7do7yvmn.ap-northeast-1.rds.amazonaws.com
-        DB_USER: academy16
-        DB_PASSWORD: kpsHGq9nmWXNicgvMtPWjqg7AaGQry
-        DB_PORT: 3306
-        DATABASE: academy16
 
 Resources:
   DailyDataBatchFunction:
