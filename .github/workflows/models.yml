@@ -1,0 +1,18 @@
+name: "[TEST] models"
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17.x'
+      - name: Test
+        run: |
+          cd sam-app-ca-16-medical-facility/models
+          go get .
+          go test

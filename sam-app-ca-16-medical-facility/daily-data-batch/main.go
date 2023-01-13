@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
+	"covid19/models"
 	"covid19/shared"
 )
 
@@ -92,7 +93,7 @@ func handler(request events.CloudWatchEvent) {
 			log.Fatal(err)
 		}
 
-		if _, err := submissionInsert.Exec(row.SubmitDate, convAnsType(row.AnsType), convFacilityType(row.FacilityType), row.FacilityId); err != nil {
+		if _, err := submissionInsert.Exec(row.SubmitDate, models.ConvertAnsType(row.AnsType), models.ConvertFacilityType(row.FacilityType), row.FacilityId); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -104,32 +105,4 @@ func handler(request events.CloudWatchEvent) {
 
 func main() {
 	lambda.Start(handler)
-}
-
-func convFacilityType(raw string) string {
-	switch raw {
-	case "入院":
-		return "HOSPITAL"
-	case "救急":
-		return "OUTPATIENT"
-	case "外来":
-		return "EMERGENCY"
-	default:
-		return ""
-	}
-}
-
-func convAnsType(raw string) string {
-	switch raw {
-	case "通常":
-		return "NORMAL"
-	case "制限":
-		return "LIMITTED"
-	case "停止":
-		return "STOPPED"
-	case "未回答":
-		return "NOANSWER"
-	default:
-		return "NULL"
-	}
 }
