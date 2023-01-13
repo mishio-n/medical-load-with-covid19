@@ -3,7 +3,7 @@ generator client {
 }
 
 generator erd {
-  output = "../ERD.png"
+  output = "./ERD.png"
   provider = "prisma-erd-generator"
 }
 

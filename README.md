@@ -30,7 +30,7 @@ https://corona.go.jp/dashboard より、**全国医療機関の医療提供体�
 
 ## テーブル設計
 
-![](./ERD.png)
+![](./prisma/ERD.png)
 
 - 病院データテーブル
 - APIで取得できる日々の提出データ格納テーブル
