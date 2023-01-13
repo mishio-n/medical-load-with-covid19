@@ -19,6 +19,15 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.17.x'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: DB Setup
+        env:
+          DATABASE_URL: "mysql://root:password@localhost:3307/test_db"
+        run: |
+          npm i
+          npx prisma db push
       - name: Test
         run: |
           cd sam-app-ca-16-medical-facility/api/get-rate-by-point
