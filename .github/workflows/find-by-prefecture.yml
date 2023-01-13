@@ -1,4 +1,4 @@
-name: get-rate-by-pointのテスト
+name: "[TEST] find-by-prefecture"
 on: [push]
 
 jobs:

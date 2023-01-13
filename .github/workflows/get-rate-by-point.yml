@@ -1,4 +1,4 @@
-name: get-rate-by-pointのテスト
+name: "[TEST] get-rate-by-point"
 on: [push]
 
 jobs:
