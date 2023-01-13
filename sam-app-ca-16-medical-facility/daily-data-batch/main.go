@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
 	"log"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -37,23 +33,7 @@ type DailySurveyResponse struct {
 }
 
 func handler(request events.CloudWatchEvent) {
-	req, _ := http.NewRequest(http.MethodGet, DATA_URL, nil)
-	client := new(http.Client)
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Error Request:", err)
-	}
-
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		log.Fatal("Error Response:", res.Status)
-	}
-
-	body, _ := io.ReadAll(res.Body)
-
-	var dailySurveyResponse []DailySurveyResponse
-	json.Unmarshal(body, &dailySurveyResponse)
+	dailySurveyResponse := models.FetchDailySurveyApi(DATA_URL)
 
 	db, err := shared.Connect()
 	if err != nil {
@@ -62,45 +42,7 @@ func handler(request events.CloudWatchEvent) {
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Minute)
 
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tx.Rollback()
-
-	facilityInsert, err := tx.Prepare("insert ignore into Facility (id,name,prefecture,address,tel,latitude,longitude,city,cityCode) VALUES (?,?,?,?,?,?,?,?,?)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer facilityInsert.Close()
-
-	submissionInsert, err := tx.Prepare("insert ignore into FacilitySubmission (date,answer,facilityType,facilityId) VALUES (?,?,?,?)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer submissionInsert.Close()
-
-	for _, row := range dailySurveyResponse {
-		latitude, err := strconv.ParseFloat(row.Latitude, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		longitude, err := strconv.ParseFloat(row.Longitude, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if _, err := facilityInsert.Exec(row.FacilityId, row.FacilityName, row.PrefName, row.FacilityAddr, row.FacilityTel, latitude, longitude, row.CityName, row.LocalGovCode); err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := submissionInsert.Exec(row.SubmitDate, models.ConvertAnsType(row.AnsType), models.ConvertFacilityType(row.FacilityType), row.FacilityId); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		log.Fatal(err)
-	}
+	models.InsertDailyServeyData(db, dailySurveyResponse)
 }
 
 func main() {
