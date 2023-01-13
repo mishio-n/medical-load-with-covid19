@@ -24,3 +24,4 @@ node_modules
 env.json
 env.prod.json
 .aws-sam
+.DS_Store
