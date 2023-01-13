@@ -36,10 +36,10 @@ https://corona.go.jp/dashboard より、**全国医療機関の医療提供体�
 - APIで取得できる日々の提出データ格納テーブル
 - 提出データの分析結果格納テーブル
 
-## デモ（GeoJson）
+## 動作イメージ
 
-[こちら](./demo.geojson)
-
+[こちら](./demo.geojson)  
+※GitHubのGeoJsonプレビュー機能では詳細な表現はできないためイメージとなります。
 
 ## 簡単な使い方
 
