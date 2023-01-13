@@ -23,32 +23,7 @@ type FacilityWithRate struct {
 type Response struct {
 	AreaRate   float64            `json:"areaRate"`
 	Facilities []FacilityWithRate `json:"facilities"`
-	GeoJson    []Coordinates      `json:"geoJson"`
-}
-
-type Coordinates struct {
-	Longitude float64
-	Latitude  float64
-}
-
-type AreaGeoJson struct {
-	Type     string `json:"type"`
-	Features []struct {
-		Type       string `json:"type"`
-		Properties struct {
-			Type          string  `json:"type"`
-			StrokeColor   string  `json:"strokeColor"`
-			StrokeOpacity int     `json:"strokeOpacity"`
-			StrokeWeight  int     `json:"strokeWeight"`
-			FillColor     string  `json:"fillColor"`
-			FillOpacity   float64 `json:"fillOpacity"`
-			MarkerColor   string  `json:"marker-color"`
-		} `json:"properties,omitempty"`
-		Geometry struct {
-			Type        string      `json:"type"`
-			Coordinates [][]float64 `json:"coordinates"`
-		} `json:"geometry"`
-	} `json:"features"`
+	GeoJson    GeoJson            `json:"geoJson"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -88,7 +63,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	response := new(Response)
 	response.Facilities = facilities
 	response.AreaRate = calcAreaRate(facilities)
-	response.GeoJson = circlePoints
+	response.GeoJson = createGeoJson(circlePoints, circlePoints, 0.4)
 
 	body, _ := json.Marshal(response)
 
@@ -200,6 +175,55 @@ func generateCirclePoints(center Coordinates, radius float64) []Coordinates {
 	return points
 }
 
-func formatGeoJson(circlePoints []Coordinates, facilityPoints []Coordinates) {
+func createGeoJson(circlePoints []Coordinates, facilityPoints []Coordinates, areaRate float64) GeoJson {
+	var geoJson = GeoJson{}
+	geoJson.Type = "FeatureCollection"
 
+	// 円の描画
+	var circleFeature = GeoJsonFeature{}
+	areaColor := areaColor(areaRate)
+	circleFeature.Type = "Feature"
+	circleFeature.Properties = GeoJsonFeatureProperty{
+		Stroke:        areaColor,
+		StrokeWidth:   2,
+		StrokeOpacity: 1,
+		Fill:          areaColor,
+		FillOpacity:   0.1,
+	}
+	circleFeature.Geometry = GeoJsonFeatureGeometry{
+		Type:        "Polygon",
+		Coordinates: coordinatesToTupleSlice(circlePoints),
+	}
+
+	geoJson.Features = append(geoJson.Features, circleFeature)
+
+	return geoJson
+}
+
+func areaColor(areaRate float64) string {
+	if areaRate > 0.8 {
+		return "green"
+	}
+
+	if areaRate > 0.6 {
+		return "yellow"
+	}
+
+	return "red"
+}
+
+func coordinatesToTupleSlice(points []Coordinates) [1][][2]float64 {
+	var result [1][][2]float64
+	var tupleSlice [][2]float64
+
+	for _, point := range points {
+		var tuple [2]float64
+		tuple[0] = point.Longitude
+		tuple[1] = point.Latitude
+		tupleSlice = append(tupleSlice, tuple)
+	}
+
+	result[0] = tupleSlice
+
+	return result
 }
