@@ -50,8 +50,8 @@ https://corona.go.jp/dashboard より、**全国医療機関の医療提供体�
 
 ## API 仕様書
 
-1. [範囲検索 API](./docs)
-2. [医療機関の分析データ取得 API](./docs)
+1. [範囲検索 API](./docs/area-api.md)
+2. [医療機関の分析データ取得 API](./docs/facility-api.md)
 
 ## 範囲検索 API の GeoJson データの使い方
 

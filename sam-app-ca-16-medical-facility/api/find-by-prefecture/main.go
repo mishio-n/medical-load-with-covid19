@@ -33,6 +33,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	db.SetConnMaxLifetime(time.Minute)
 
 	facilities := getFacilitiesWithStatistics(db, prefecture, cityCode, facilityType)
+	if len(facilities) == 0 {
+		return events.APIGatewayProxyResponse{
+			Body:       "指定した条件に合致するデータが見つかりませんでした",
+			StatusCode: 404,
+		}, nil
+	}
+
 	body, _ := json.Marshal(facilities)
 
 	return events.APIGatewayProxyResponse{
