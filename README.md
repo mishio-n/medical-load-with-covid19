@@ -75,7 +75,7 @@ brew install jq
 3. パラメータをクエリで指定してコマンドで API を実行する
 
 ```
-curl 'https://5ii04kds12.execute-api.ap-northeast-1.amazonaws.com/Prod/rate?lon=139.7730717&lat=35.698383&distance=2' | jq '.geoJson' | pbcopy
+curl 'https://34dc6t8py6.execute-api.ap-northeast-1.amazonaws.com/Prod/rate?lon=139.7730717&lat=35.698383&distance=2' | jq '.geoJson' | pbcopy
 ```
 
 4. https://geojson.io/ にアクセスし、クリップボードの内容を画面右側のエディタ部分へ貼り付ける
